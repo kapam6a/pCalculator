@@ -1,4 +1,6 @@
 import sys
+import StackMachine
+import Parser
 
 if len(sys.argv) < 2:
     print("Please provide expression")
@@ -8,29 +10,31 @@ tokens = ""
 for i in range(1, len(sys.argv)):
     tokens = tokens + sys.argv[i]
 
-def applyOperation(f):
-    secondOperand = stack.pop()
-    firstOperand = stack.pop()
-    stack.append(f(firstOperand, secondOperand))
+tokens = tokens.strip()
 
-stack = []
-for token in tokens:
+if tokens[0] in ["+", "-", "/", "*"]:
+    parser = Parser.PrefixNotationParser(tokens)
+elif tokens[0].isnumeric() and not tokens[1].isnumeric():
+    parser = Parser.InfixNotationParser(tokens)
+    print(parser.parse())
+else:
+    parser = Parser.PostfixNotationParser(tokens)
+
+stackMachine = StackMachine.StackMachine()
+for token in parser.parse():
     if token.isnumeric():
-        stack.append(int(token))
+        stackMachine.push(int(token))
     elif token == "+":
-        applyOperation(lambda f, s: f + s)
+        stackMachine.add()
     elif token == "-":
-        applyOperation(lambda f, s: f - s)
+        stackMachine.subtract()
     elif token == "/":
-        applyOperation(lambda f, s: f / s)
+        stackMachine.divide()
     elif token == "*":
-        applyOperation(lambda f, s: f * s)
+        stackMachine.multiply()
     elif token == " ":
         continue
     else:
         print("Not supported symbol")
         sys.exit(1)
-if len(stack) != 1:
-    print("Wrong expression")
-    sys.exit(1)
-print(f"{stack.pop()}")
+print(f"{stackMachine.pop()}")
